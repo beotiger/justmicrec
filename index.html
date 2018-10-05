@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+  
+<link rel="stylesheet" href="//beotiger.com/inc/css/_main.css?v=2" type="text/css">
+<link rel="stylesheet" href="//beotiger.com/inc/css/justmicrec.css?v=2" type="text/css">
+
+<!-- Note: jquery is needed just for demonstration script -->
+<script
+			  src="https://code.jquery.com/jquery-1.12.4.min.js"
+			  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+			  crossorigin="anonymous"></script>
+<script src="js/justmicrec_lib.js"></script>
+<script src="js/justmicrec.js"></script>
+
+<title>JustRec - HTML5 Javascript Recording Software</title>  
+</head>
+
+<body> 
+
+<div id="main" style="width: 75%; margin: 40px auto">
+
+	<h1>JustMicRec: HTML5 JavaScript Microphone [-MP3-] Recording for You</h1>
+	<nav id="jc-nav">
+		<ul>
+			<li><a href="#dts">Demo</a></li>
+			<li>&nbsp;</li>
+			<li><a href="#cmd">Commands</a></li>
+			<li><a href="#opt">Options</a></li>
+			<li><a href="#callbacks">Callbacks</a></li>
+			<li>&nbsp;</li>
+			<li><a href="#spt">Notes</a></li>
+		</ul>
+	</nav>
+			
+	<h2 id="dts"><i class="fa">&#xf028;</i>Demo and test</h2>
+	
+	<div>In this section you can try JustMicRec and see how it works.</div>
+	<p>
+		<strong>Note 1</strong>: you can pause, preview and resume recording before sending it to server<!-- or converting it to MP3. Send MP3 data to server only after converting.<br> -->
+		<br>
+		<strong>Note 2</strong>: <em>your recordings here are in a public domain and will be live for at least 1 day.</em>
+	</p>
+	
+	<div id="myflashrec">
+		<h3>justMicRec: Welcome!</h3>
+	
+		<div id="rec-ctrl">
+			<strong>maxTime</strong>: 
+							<select id="maxtime" title="Select maximum time for recording">
+								<option value="15">15 sec</option>
+								<option value="30">30 sec</option>
+								<option value="60" selected>1 min</option>
+								<option value="120">2 min</option>
+								<option value="180">3 min</option>
+								<option value="300">5 min</option>
+								<option value="600">10 min</option>
+							</select>
+			&nbsp;&nbsp;&nbsp;
+			<strong>Time left</strong>: <span id="time">00:00</span>
+			<input type="hidden" id="recn" value="%%RECN%%">
+			
+		</div>
+		<br>
+		<div>
+			<strong>Microphone level</strong>: <span id="level"></span>
+		</div>  
+	
+		<div>
+			<div id="levelbase">
+				<canvas id="levelbar"></canvas>
+			</div>
+			<div id="levelbase2">
+				<div id="levelbar2"></div>
+			</div>
+			
+		</div>
+	
+		<hr>
+	
+		<div>
+			<input type="button" id="start" value="Start">  
+			<input disabled type="button" id="stop" value="Stop/Pause">
+			<input disabled type="button" id="resume" value="Resume">
+			
+			<input disabled type="button" id="preview" value="Preview">
+			<input disabled type="button" id="stoppreview" value="Stop preview">
+		
+			<br><br>
+	
+			<input type="button" id="sendwav" value="Send WAV to server">
+			<!--
+			<input type="button" id="convert" value="Convert to MP3">
+			<input type="button" id="sendmp3" value="Send MP3 to server">
+			-->
+			<br>
+		</div>
+		
+		<hr>
+		<div>
+			<table class="tabnobord">
+				<tr>
+					<th colspan="2">Your WAV recording (size <span id="wavsize">0</span> bytes<!-- , length: <span id="wavlength">0</span> seconds -->)</th>
+				</tr>
+				<tr>
+					<td id="wavaudi">&nbsp;</td><td id="wavaudid">&nbsp;</td>
+				</tr>
+				<!--
+				<tr><th>Your MP3 recording on server (Size <span id="mp3size">0</span> bytes):</th><td id="mp3audi">&nbsp;</td><td id="mp3audid">&nbsp;</td></tr>			
+				-->
+			</table>
+		</div>
+		<hr>
+		<h3>Events Log &nbsp;&nbsp;&nbsp;<button onclick="$('#log').val('')">Clear log</button></h3>
+		<div>
+			<textarea id="log" cols="50" rows="8"></textarea>
+		</div>
+	</div>
+	
+	<h2 id="cmd"><i class="fa">&#xf01d;</i> Commands</h2>
+	<table class="jc-opts">
+	
+	<tr><th>Commands & Queries</th><th>Description</th></tr>
+		<tr><th>justMicRec.configure({<br>option: value,<br>option: value<br>...<br> })</th><td>Reconfigure JustMicRec for your needs. As a rule you should define path to your actual server-side script for uploading WAV files in <b>hostPath</b> parameter here.</td></tr>
+		<tr><th>justMicRec.start([maxTime])</th><td>Start recording.<br>
+		<strong>maxTime</strong> is optional parameter that defines maximum length of recording in seconds, it defaults to 60 seconds (1 minute) if not set. Throws <em>recordingActivity</em> callback during recording process.</td></tr>
+		<tr><th>justMicRec.stop()</th><td>Stop/pause recording. Throws <em>recordingStopped</em> callback when recording is actually ready for further usage, such as previewing or uploading to server.</td></tr>
+		<tr><th>justMicRec.resume()</th><td>Resume recording.</td></tr>
+					
+		<tr><th>justMicRec.preview()</th><td>Start previewing recording.</td></tr>
+		<tr><th>justMicRec.stoppreview()</th><td>Stop previewing spawned by <b>justMicRec.preview()</b> command.</td></tr>
+		
+		<tr><th>justMicRec.sendWAV()</th><td>Send raw WAV recording to server. Must be runned after <em>recordingStopped</em> event. Throws <em>WAVsendingFinished</em> callback when sending succeeds.</td></tr>
+	
+		<tr><th>justMicRec.UAhasUserMedia()</th><td>Find out if current user agent (UA) supports MediaStream interfaces.</td></tr>
+		<tr><th>justMicRec.getWAVsize()</th><td>Get the size of recorded WAV blob (in bytes).</td></tr>
+		<!-- <tr><th>justMicRec.getWAVlength()</th><td>Get the length of recorded WAV blob (in seconds).</td></tr> -->
+		
+		
+		<!--
+		<tr><th>justMicRec.convert2MP3()</th><td>Begin converting the recording from WAV to MP3 format. Throws <em>MP3converted</em> callback when converting succeeds.</td></tr>
+		
+		<tr><th>justMicRec.sendMP3()</th><td>Send MP3 recording to server. Must be runned after <b>justMicRec.convert2MP3()</b> command. Throws <em>MP3sendingFinished</em> callback when sending succeeds.</td></tr>
+		-->
+	</table>
+	
+	<br>
+	<h2 id="opt"><i class="fa">&#xf085;</i> Options</h2>
+	
+	<table class="jc-opts">
+	<tr><th>Property</th><th>Default</th><th>Description</th></tr>
+		<tr><th>hostPath</th><td> 'micrecajax.php'</td><td>Pathname for a server side script for uploading recordings</td></tr>
+		<tr><th>workerPath</th><td> 'js/justmicrecworker.js'</td><td>Pathname to recording worker script</td></tr>
+					
+		<tr><th colspan="3">Callback functions</th></tr>
+			<tr><th>recordingError </th><td> function(e) { alert(e) }</td><td>Spawns when something goes wrong with recording process</td></tr>
+		<tr><th>recordingActivity</th><td> function(analyserNode, seconds) {}</td><td>Spawns during recording process about one tenth of second. <b>seconds</b> is time of recording left in seconds and <b>analyserNode</b> is a reference to an audio recorder audio node for visualizing microphone level.</td></tr>
+			<tr><th>recordingStopped</th><td> function(){}</td><td>Spawns when recording interrupts either by timer or by <em>justrec.stop()</em> command and when recording is ready for further manipulations such as previewing or uploading to server</td></tr>
+		<tr><th>uploadingProcess</th><td> function(current, total) {}</td><td>Spawns during uploading process.</td></tr>
+		<tr><th>WAVsendingFinished</th><td> function(){}</td><td>Spawns when WAV file fully transferred to the server by server-side script</td></tr>
+	</table>
+	
+	<br>
+	
+	<h2 id="callbacks"><i class="fa">&#xf01d;</i> Callbacks</h2>
+	<table class="jc-opts">
+	
+	<tr><th>Callback</th><th>Description</th></tr>
+		<tr><th>recordingError(e)</th><td>Throws when some error occured. Parameter <b>e</b> is a string describing this error.</td></tr>
+		<tr><th>recordingActivity(analyserNode, seconds)</th><td>Throws during recording process. Parameters are: <b>analyserNode</b> - reference to audio node of mic level, <b>seconds</b> - seconds left for recording.</td></tr>
+		<tr><th>recordingStopped</th><td>Throws when recording is being stopped and is ready for further usage - for previewing or uploading to server.</td></tr>
+		<tr><th>WAVsendingFinished</th><td>Throws when recording has been successfully sent to server.</td></tr>
+	
+	</table>
+	<br>
+	
+	<hr>
+	
+	<h2 id="spt"><i class="fa">&#xf0a1;</i> Notes</h2>
+	<div>
+	
+	<h3>Recording process</h3>
+	<p>
+	Users should allow microphone access when browser asks them permission to do it.<br><br>
+	Actual recording process will start when user first allows it.<br><br>
+	Recording is being processed in stereo WAV blob, and is converted to mono WAV file when recording stopped for minimizing requiring disk and memory space usage.
+	</p>
+	
+	<h3>Using server-side script</h3>
+	<p>Recordings are sent to server-side script as raw POST data. You can grab and save it anywhere by server-side script of your choice.</p>
+	
+	<br><br>
+	<i class="fa">&#xf071;</i>&nbsp; If you still need some help, please email me to <b>beotiger@gmail.com</b>.<br><br>
+	
+	<br>
+	</div>
+	<hr>
+	
+	<h2><i id="love" class="fa">&#xf08a;</i> Thank you for using JustMicRec</h2>
+
+</div><!-- /#main --> 
+</body>
+</html>
