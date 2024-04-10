@@ -12,9 +12,6 @@
 Recordings are sent to server as raw POST data. You can grab and save it anywhere by server-side script of your choice.
 In this project we use **micrecajax.php** script for that purpose.
 
-### Home page and demo
-For home page and working example see [this page](https://beotiger.com/justmicrec).
-
 ### An old JustRec
 Please do not mess this project with an older *JustRec* project which uses ActionScript (Flash) as a recording backend.
 
